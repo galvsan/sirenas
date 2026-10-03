@@ -1,289 +1,306 @@
 ```html
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<html lang="es" class="h-full bg-slate-950">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Sirenas de Policía HD</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Inter & Orbitron Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        digital: ['Orbitron', 'monospace'],
-                    },
-                    colors: {
-                        tactical: {
-                            800: '#1e293b',
-                            900: '#0f172a',
-                            950: '#080d1a',
-                        },
-                        emergency: {
-                            red: '#ff003c',
-                            blue: '#0066ff',
-                            amber: '#ffaa00',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        .bezel-metallic {
-            background: linear-gradient(145deg, #2a3447, #121824);
-            box-shadow: 5px 5px 15px #0a0e17, -5px -5px 15px #1e283a;
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;600;700&display=swap');
+
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+
+        /* Custom glow effects for realistic lights */
+        .glow-red {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.85), inset 0 0 12px rgba(255, 255, 255, 0.6);
         }
-        .inset-panel {
-            background: #090e17;
-            box-shadow: inset 3px 3px 6px #04060a, inset -3px -3px 6px #121926;
+        .glow-blue {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.85), inset 0 0 12px rgba(255, 255, 255, 0.6);
         }
-        .btn-push {
-            transition: all 0.08s ease;
-            box-shadow: 0 4px 0 #0f172a, 0 5px 10px rgba(0,0,0,0.5);
+        .glow-amber {
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.85), inset 0 0 12px rgba(255, 255, 255, 0.6);
         }
-        .btn-push:active, .btn-push.active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #0f172a, 0 2px 4px rgba(0,0,0,0.5);
+        .glow-green {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
         }
-        /* Custom scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #080d1a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+        /* Tactile Button Pressing Effects */
+        .btn-tactile {
+            transition: all 0.08s ease-in-out;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.6), 0 10px 15px rgba(0, 0, 0, 0.5);
+        }
+        .btn-tactile:active, .btn-tactile.active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.8), 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Tactical Carbon Pattern Background */
+        .bg-tactical {
+            background-color: #0d1117;
+            background-image: radial-gradient(#1f293d 1px, transparent 1px), radial-gradient(#1f293d 1px, #0d1117 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Metallic console borders */
+        .console-border {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+        }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans select-none overflow-x-hidden text-slate-200">
+<body class="h-full flex flex-col font-sans select-none overflow-x-hidden text-slate-200 bg-tactical">
 
-    <!-- START OVERLAY FOR AUDIO CONTEXT UNLOCK -->
-    <div id="startOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md transition-opacity duration-300">
-        <div class="max-w-md w-full mx-4 p-8 rounded-2xl bezel-metallic text-center border border-slate-700/50 shadow-2xl">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-600/20 flex items-center justify-center border border-blue-500/40 text-blue-400 animate-pulse">
-                <i class="fa-solid fa-shield-halved text-4xl"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold text-white tracking-wider font-digital mb-2">SIMULADOR DE SIRENAS</h1>
-            <p class="text-slate-400 text-sm mb-6 leading-relaxed">Sistema táctico de control de luces prioritarias, sirenas electrónicas multitono y megafonía PA vehicular.</p>
-            <button id="btnStartApp" class="w-full py-4 px-6 rounded-xl font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 active:scale-95 transition-all flex items-center justify-center gap-3">
-                <i class="fa-solid fa-power-off text-xl"></i>
-                INICIAR SISTEMA TÁCTICO
-            </button>
-            <p class="text-xs text-slate-500 mt-4"><i class="fa-solid fa-volume-high mr-1"></i> Se recomienda usar altavoces o auriculares para mejor resonancia.</p>
-        </div>
-    </div>
-
-    <!-- MAIN APP WRAPPER -->
+    <!-- MAIN CONSOLE WRAPPER -->
     <div class="flex-1 flex flex-col max-w-7xl w-full mx-auto p-2 sm:p-4 gap-4 h-full">
 
-        <!-- HEADER TOOLBAR -->
-        <header class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bezel-metallic border border-slate-800">
+        <!-- HEADER & TOP CONTROL TOOLBAR -->
+        <header class="console-border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-blue-600/20 border border-blue-500/50 flex items-center justify-center text-blue-400">
-                    <i class="fa-solid fa-lightbulb text-xl animate-pulse"></i>
+                <div class="p-2.5 bg-blue-600/20 border border-blue-500/40 rounded-lg text-blue-400">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-digital font-extrabold text-lg sm:text-xl text-white tracking-wider flex items-center gap-2">
-                        CODE-3 <span class="text-xs font-sans px-2 py-0.5 rounded bg-blue-600/30 text-blue-300 border border-blue-500/30">VIRTUAL DSP</span>
+                    <h1 class="font-orbitron font-extrabold text-lg sm:text-xl tracking-wider text-white flex items-center gap-2">
+                        SIREN SYSTEM <span class="text-xs font-semibold px-2 py-0.5 bg-red-600 text-white rounded">V3.5 HD</span>
                     </h1>
-                    <p class="text-xs text-slate-400">Consola Sirena y Módulo de Luces LED Policiales</p>
+                    <p class="text-xs text-slate-400 font-medium">Consola de Control de Sirena, Megafonía y Luces de Emergencia</p>
                 </div>
             </div>
 
-            <!-- PRESETS & QUICK CONTROLS -->
-            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                <div class="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-800">
-                    <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider"><i class="fa-solid fa-globe mr-1"></i>País:</label>
-                    <select id="presetSelect" class="bg-slate-800 text-xs font-semibold text-blue-400 rounded px-2 py-1 outline-none border border-slate-700 cursor-pointer hover:border-blue-500">
-                        <option value="es">España (Cuerpos Seguridad)</option>
-                        <option value="us">EE.UU. (Police Patrol)</option>
-                        <option value="uk">Reino Unido (999 Police)</option>
-                        <option value="cyber">Cyberpunk / Futuro</option>
-                        <option value="fire">Ambulancia / Bomberos</option>
+            <!-- Global Quick Controls -->
+            <div class="flex items-center gap-2 sm:gap-4 flex-wrap">
+                <!-- Preset Country Selector -->
+                <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                    <label for="presetSelect" class="text-xs text-slate-400 mr-2 font-semibold">PRESET:</label>
+                    <select id="presetSelect" class="bg-transparent text-xs font-bold text-amber-400 focus:outline-none cursor-pointer">
+                        <option value="es" class="bg-slate-900 text-white">🇪🇸 España (Policía / GC)</option>
+                        <option value="us" class="bg-slate-900 text-white">🇺🇸 USA Police Interceptor</option>
+                        <option value="uk" class="bg-slate-900 text-white">🇬🇧 UK Emergency Services</option>
+                        <option value="futurist" class="bg-slate-900 text-white">⚡ Futurist / Synth</option>
                     </select>
                 </div>
 
-                <!-- MASTER VOLUME -->
-                <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
-                    <i id="muteBtn" class="fa-solid fa-volume-high text-slate-400 cursor-pointer hover:text-white transition-colors"></i>
-                    <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="0.7" class="w-16 sm:w-24 accent-blue-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
-                    <span id="volValue" class="text-xs font-digital text-slate-300 w-8">70%</span>
+                <!-- Master Volume Slider -->
+                <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1">
+                    <i class="fa-solid fa-volume-high text-xs text-slate-400" id="volIcon"></i>
+                    <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="0.7" class="w-16 sm:w-24 accent-blue-500 cursor-pointer">
+                    <span id="volValue" class="text-xs font-mono text-slate-300 w-8">70%</span>
                 </div>
 
-                <button id="fullscreenBtn" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors" title="Pantalla Completa">
-                    <i class="fa-solid fa-expand"></i>
+                <!-- Master Mute Button -->
+                <button id="muteBtn" class="p-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 text-xs font-semibold transition">
+                    <i class="fa-solid fa-volume-xmark mr-1"></i> Mute
                 </button>
             </div>
         </header>
 
-        <!-- MAIN DASHBOARD CONTENT -->
-        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-
-            <!-- LEFT/TOP PANEL: VISUAL LIGHTBAR & CRUISER CANVAS (5 COLS) -->
-            <div class="lg:col-span-5 flex flex-col gap-4">
-                
-                <!-- LIGHTBAR VISUALIZER CARD -->
-                <div class="relative flex-1 rounded-2xl bezel-metallic border border-slate-800 p-4 flex flex-col justify-between overflow-hidden min-h-[260px]">
-                    <!-- AMBIENT REFLECTION CANVAS BACKDROP -->
-                    <canvas id="ambientCanvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-80 z-0"></canvas>
-                    
-                    <div class="relative z-10 flex items-center justify-between border-b border-slate-800/80 pb-2">
-                        <span class="text-xs font-digital font-bold tracking-widest text-slate-400 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                            PUENTE DE LUCES LED
-                        </span>
-                        <div class="flex items-center gap-2">
-                            <button id="btnPatternNext" class="text-xs px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300">
-                                Patrón: <span id="patternName" class="text-blue-400 font-semibold">Estroboscópico</span> <i class="fa-solid fa-rotate mr-1"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- LED LIGHTBAR BAR GRAPHIC -->
-                    <div class="relative z-10 my-auto py-6">
-                        <div class="max-w-md mx-auto bg-slate-950 p-2 sm:p-3 rounded-2xl border-2 border-slate-800 shadow-2xl flex items-center justify-between gap-1 sm:gap-2 relative">
-                            
-                            <!-- LEFT LIGHT MODULES -->
-                            <div class="flex-1 grid grid-cols-4 gap-1 sm:gap-1.5">
-                                <div id="ledL1" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                                <div id="ledL2" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                                <div id="ledL3" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                                <div id="ledL4" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                            </div>
-
-                            <!-- CENTER SPEAKER / TRAFFIC ADVISOR DISPLAY -->
-                            <div class="w-12 sm:w-16 h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 flex flex-col items-center justify-center p-1 gap-1">
-                                <div class="w-full h-1 rounded bg-slate-800 overflow-hidden">
-                                    <div id="speakerBar" class="h-full bg-blue-500 w-0 transition-all"></div>
-                                </div>
-                                <i class="fa-solid fa-bullhorn text-xs text-slate-600"></i>
-                            </div>
-
-                            <!-- RIGHT LIGHT MODULES -->
-                            <div class="flex-1 grid grid-cols-4 gap-1 sm:gap-1.5">
-                                <div id="ledR1" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                                <div id="ledR2" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                                <div id="ledR3" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                                <div id="ledR4" class="h-10 sm:h-12 rounded-lg bg-slate-900 border border-slate-800 transition-all duration-75"></div>
-                            </div>
-                        </div>
-
-                        <!-- TRAFFIC ADVISOR ARROW INDICATOR -->
-                        <div class="mt-4 flex justify-center items-center gap-4 text-xs font-digital text-slate-500">
-                            <span id="advLeft" class="px-2 py-1 rounded bg-slate-900 border border-slate-800"><i class="fa-solid fa-arrow-left"></i> DESVÍO IZQ</span>
-                            <span id="advCenter" class="px-2 py-1 rounded bg-slate-900 border border-slate-800"><i class="fa-solid fa-arrows-left-right"></i> CENTRO</span>
-                            <span id="advRight" class="px-2 py-1 rounded bg-slate-900 border border-slate-800">DESVÍO DER <i class="fa-solid fa-arrow-right"></i></span>
-                        </div>
-                    </div>
-
-                    <!-- POLICE VEHICLE GRAPHIC WITH FLASHING HEADLIGHTS -->
-                    <div class="relative z-10 bg-slate-950/80 rounded-xl p-3 border border-slate-800/80 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="relative w-12 h-12 flex items-center justify-center text-slate-400 text-2xl">
-                                <i class="fa-solid fa-car-on"></i>
-                                <div id="headlightL" class="absolute -left-1 top-3 w-3 h-3 rounded-full bg-white opacity-0 blur-xs"></div>
-                                <div id="headlightR" class="absolute -right-1 top-3 w-3 h-3 rounded-full bg-white opacity-0 blur-xs"></div>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-200" id="vehiclePresetLabel">Patrulla Policía Nacional</p>
-                                <p class="text-[10px] text-slate-400">Modo de persecución activo - Estrobos ráfaga</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button id="toggleLightsMaster" class="btn-push px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-power-off text-amber-400"></i> LUCES [L]
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- OSCILLOSCOPE AUDIO SPECTRUM CANVAS -->
-                <div class="h-32 rounded-2xl bezel-metallic border border-slate-800 p-3 flex flex-col justify-between relative overflow-hidden">
-                    <div class="flex justify-between items-center text-[11px] font-digital text-slate-400 z-10">
-                        <span><i class="fa-solid fa-wave-square text-blue-400 mr-1"></i>ANALIZADOR Frecuencias DSP</span>
-                        <span id="freqDisplay" class="text-emerald-400 font-bold">0 Hz</span>
-                    </div>
-                    <canvas id="oscillatorCanvas" class="absolute inset-0 w-full h-full z-0 opacity-80"></canvas>
-                    <div class="z-10 flex justify-between items-end text-[10px] text-slate-500 font-mono">
-                        <span>20Hz</span>
-                        <span>1kHz</span>
-                        <span>5kHz</span>
-                        <span>20kHz</span>
-                    </div>
-                </div>
-
+        <!-- LIGHTBAR DISPLAY & REFLECTION SECTION -->
+        <section class="console-border rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-400 border-b border-slate-800 pb-2">
+                <span class="flex items-center gap-2">
+                    <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+                    ESTADO LUCES: <span id="statusText" class="text-white font-bold">APAGADO</span>
+                </span>
+                <span class="font-mono text-slate-500">PATRULLERO ID: 091-TACTICAL</span>
+                <span id="patternName" class="text-amber-400 font-bold">PATRULLA ROTATIVO</span>
             </div>
 
-            <!-- RIGHT PANEL: TACTICAL SIREN SWITCHBOX (7 COLS) -->
-            <div class="lg:col-span-7 flex flex-col gap-4">
-                
-                <div class="flex-1 rounded-2xl bezel-metallic border border-slate-800 p-4 sm:p-6 flex flex-col justify-between gap-6 shadow-2xl">
-                    
-                    <!-- CONTROL BOX HEADER / STATUS -->
-                    <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-3 gap-2">
-                        <div class="flex items-center gap-2">
-                            <div id="statusDot" class="w-3 h-3 rounded-full bg-slate-600"></div>
-                            <span id="statusText" class="font-digital text-sm font-bold text-slate-400 tracking-wider">MODO: STANDBY</span>
+            <!-- LIGHTBAR CANVAS MATRIX -->
+            <div class="relative w-full h-24 sm:h-32 bg-black/80 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden p-2">
+                <!-- Lightbar Physical Frame -->
+                <div class="w-full h-full max-w-4xl border-2 border-slate-700 rounded-xl bg-slate-950 flex items-center justify-between p-2 sm:p-4 gap-2 relative shadow-inner">
+                    <!-- Left Light Pods -->
+                    <div class="flex-1 h-full flex gap-1.5 sm:gap-2 items-center">
+                        <div id="ledL1" class="flex-1 h-full rounded-md bg-red-950/40 border border-red-900/40 transition-all duration-75"></div>
+                        <div id="ledL2" class="flex-1 h-full rounded-md bg-red-950/40 border border-red-900/40 transition-all duration-75"></div>
+                        <div id="ledL3" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
+                        <div id="ledL4" class="flex-1 h-full rounded-md bg-amber-950/40 border border-amber-900/40 transition-all duration-75"></div>
+                    </div>
+
+                    <!-- Center Speaker / Siren Grill -->
+                    <div class="w-16 sm:w-24 h-full bg-slate-900 border border-slate-700 rounded-md flex flex-col items-center justify-center gap-1 px-1">
+                        <div class="w-full h-1 bg-slate-800 rounded"></div>
+                        <div class="w-full h-1 bg-slate-800 rounded"></div>
+                        <div class="w-full h-1 bg-slate-800 rounded"></div>
+                        <span class="text-[9px] font-orbitron text-slate-500 font-bold tracking-tighter">100W PA</span>
+                    </div>
+
+                    <!-- Right Light Pods -->
+                    <div class="flex-1 h-full flex gap-1.5 sm:gap-2 items-center">
+                        <div id="ledR4" class="flex-1 h-full rounded-md bg-amber-950/40 border border-amber-900/40 transition-all duration-75"></div>
+                        <div id="ledR3" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
+                        <div id="ledR2" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
+                        <div id="ledR1" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Ambient Reflection Lighting Canvas -->
+            <canvas id="ambientCanvas" class="w-full h-6 rounded-md opacity-80 pointer-events-none"></canvas>
+
+            <!-- Light Controls Bar -->
+            <div class="flex items-center justify-between gap-2 flex-wrap pt-1">
+                <button id="toggleLightsMaster" class="btn-tactile bg-red-700 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-orbitron font-bold text-xs tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb"></i> ENCENDER LUCES (L)
+                </button>
+
+                <div class="flex gap-2">
+                    <button id="btnPatternNext" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders"></i> Cambiar Patrón
+                    </button>
+                    <span id="vehiclePresetLabel" class="text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-400 font-mono flex items-center">
+                        MODO: POLICÍA NACIONAL
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN CONTROL CONSOLE: SIRENS & MEGAPHONE -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
+
+            <!-- LEFT & CENTER PANEL: SIREN TONES -->
+            <div class="lg:col-span-2 console-border rounded-xl p-4 flex flex-col gap-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <h2 class="font-orbitron text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-bullhorn text-red-500"></i> SELECTOR DE TONOS DE SIRENA
+                    </h2>
+                    <span class="text-xs text-slate-400 font-mono">TECLAS: [1] [2] [3] [4] [5] [ESPACIO]</span>
+                </div>
+
+                <!-- Primary Siren Buttons Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+                    <!-- WAIL Tone -->
+                    <button id="btnWail" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
+                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-red-400">
+                            <i class="fa-solid fa-wave-square text-lg"></i>
                         </div>
+                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">WAIL</span>
+                        <span class="text-[10px] text-slate-400">Lento Largo [1]</span>
+                    </button>
+
+                    <!-- YELP Tone -->
+                    <button id="btnYelp" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
+                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-blue-400">
+                            <i class="fa-solid fa-bolt text-lg"></i>
+                        </div>
+                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">YELP</span>
+                        <span class="text-[10px] text-slate-400">Rápido Interceptor [2]</span>
+                    </button>
+
+                    <!-- HI-LO Tone (European / Spain) -->
+                    <button id="btnHiLo" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
+                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-amber-400">
+                            <i class="fa-solid fa-repeat text-lg"></i>
+                        </div>
+                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">HI-LO</span>
+                        <span class="text-[10px] text-slate-400">Dos Tonos (ES) [3]</span>
+                    </button>
+
+                    <!-- PIERCER / PHASER -->
+                    <button id="btnPiercer" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
+                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-purple-400">
+                            <i class="fa-solid fa-burst text-lg"></i>
+                        </div>
+                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">PIERCER</span>
+                        <span class="text-[10px] text-slate-400">Ultra Rápido [4]</span>
+                    </button>
+
+                </div>
+
+                <!-- Momentary & Secondary Triggers -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                    <!-- MANUAL SWEEP (Hold to pitch up) -->
+                    <button id="btnManual" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex items-center justify-between px-4 group">
                         <div class="flex items-center gap-3">
-                            <span class="text-xs font-mono text-slate-400">IMPEDANCIA: <span class="text-slate-200">100W / 11 Ohm</span></span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-900/50 text-blue-300 border border-blue-700/50">DSP SYNTH</span>
+                            <i class="fa-solid fa-hand-pointer text-slate-400 group-hover:text-emerald-400 text-xl"></i>
+                            <div class="text-left">
+                                <div class="font-orbitron font-bold text-xs text-white">MANUAL SWEEP</div>
+                                <div class="text-[10px] text-slate-400">Mantener Pulsado [M]</div>
+                            </div>
                         </div>
+                        <span class="w-3 h-3 rounded-full bg-slate-700 border border-slate-500"></span>
+                    </button>
+
+                    <!-- SUB-BASS RUMBLER EFFECT -->
+                    <button id="btnRumbler" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex items-center justify-between px-4 group">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-drum text-slate-400 group-hover:text-red-500 text-xl"></i>
+                            <div class="text-left">
+                                <div class="font-orbitron font-bold text-xs text-white">RUMBLER (SUB)</div>
+                                <div class="text-[10px] text-slate-400">Vibración Baja [R]</div>
+                            </div>
+                        </div>
+                        <span id="rumblerIndicator" class="w-3 h-3 rounded-full bg-slate-700 border border-slate-500"></span>
+                    </button>
+
+                    <!-- AIR HORN (Bocina de Aire) -->
+                    <button id="btnAirHorn" class="btn-tactile bg-amber-600/30 hover:bg-amber-600/40 border-2 border-amber-500 rounded-xl p-3 flex items-center justify-between px-4 group">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-volume-off text-amber-400 text-2xl"></i>
+                            <div class="text-left">
+                                <div class="font-orbitron font-bold text-xs text-amber-300">BOCINA AIR HORN</div>
+                                <div class="text-[10px] text-amber-200/70">Pulsar para Ráfaga [ESPACIO]</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-angles-right text-amber-400"></i>
+                    </button>
+
+                </div>
+
+                <!-- REAL-TIME WAVEFORM OSCILLOSCOPE CANVAS -->
+                <div class="mt-auto bg-slate-950 rounded-xl border border-slate-800 p-3 flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
+                        <span><i class="fa-solid fa-chart-line text-blue-400 mr-1"></i> OSCILOSCOPIO DE AUDIO EN TIEMPO REAL</span>
+                        <span id="audioFreqDisplay">FREQ: 0 Hz</span>
+                    </div>
+                    <canvas id="oscillatorCanvas" class="w-full h-16 rounded bg-slate-900 border border-slate-800/80"></canvas>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: HIGH-POWER MEGAPHONE & POLICE RADIO MIC -->
+            <div class="console-border rounded-xl p-4 flex flex-col gap-4 shadow-2xl justify-between">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <h2 class="font-orbitron text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-walkie-talkie text-amber-400"></i> MEGAFONÍA / PTT VOZ
+                    </h2>
+                    <span id="micActiveDot" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                </div>
+
+                <!-- Megaphone Mic Amplification Controls -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-3">
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>
+                        <strong>Megáfono Vehicular:</strong> Pulsa el botón para transmitir tu voz amplificada con acústica táctica.
+                    </p>
+
+                    <!-- PTT Button -->
+                    <button id="btnMicToggle" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-amber-500/60 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center group">
+                        <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-microphone text-2xl"></i>
+                        </div>
+                        <span id="micBtnText" class="font-orbitron font-bold text-xs tracking-wider text-amber-300">ACTIVAR MEGÁFONO</span>
+                        <span class="text-[10px] text-slate-400">Haz clic para hablar en directo</span>
+                    </button>
+
+                    <!-- Megaphone Gain / Amplification Slider -->
+                    <div class="flex flex-col gap-1 pt-1">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-400">Potencia Megáfono:</span>
+                            <span id="micGainVal" class="text-amber-400 font-mono font-bold">4.0x</span>
+                        </div>
+                        <input type="range" id="micGainSlider" min="1" max="10" step="0.5" value="4" class="w-full accent-amber-500 cursor-pointer">
                     </div>
 
-                    <!-- MAIN TONE BUTTONS GRID -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                        
-                        <!-- WAIL TONE -->
-                        <button id="btnWail" class="btn-push flex flex-col items-center justify-center p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700/80 group">
-                            <div class="w-3 h-3 rounded-full bg-slate-700 group-hover:bg-amber-500 mb-2 transition-colors led-ind"></div>
-                            <span class="font-digital font-extrabold text-base sm:text-lg text-slate-200">WAIL</span>
-                            <span class="text-[10px] text-slate-400 mt-1">[Tecla 1] Continua</span>
-                        </button>
-
-                        <!-- YELP TONE -->
-                        <button id="btnYelp" class="btn-push flex flex-col items-center justify-center p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700/80 group">
-                            <div class="w-3 h-3 rounded-full bg-slate-700 group-hover:bg-amber-500 mb-2 transition-colors led-ind"></div>
-                            <span class="font-digital font-extrabold text-base sm:text-lg text-slate-200">YELP</span>
-                            <span class="text-[10px] text-slate-400 mt-1">[Tecla 2] Rápida</span>
-                        </button>
-
-                        <!-- HI-LO / ESPAÑA POLICÍA -->
-                        <button id="btnHiLo" class="btn-push flex flex-col items-center justify-center p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700/80 group">
-                            <div class="w-3 h-3 rounded-full bg-slate-700 group-hover:bg-amber-500 mb-2 transition-colors led-ind"></div>
-                            <span class="font-digital font-extrabold text-base sm:text-lg text-blue-400">HI-LO / EU</span>
-                            <span class="text-[10px] text-slate-400 mt-1">[Tecla 3] Dos Tonos</span>
-                        </button>
-
-                        <!-- PIERCER / PHASER -->
-                        <button id="btnPiercer" class="btn-push flex flex-col items-center justify-center p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700/80 group">
-                            <div class="w-3 h-3 rounded-full bg-slate-700 group-hover:bg-amber-500 mb-2 transition-colors led-ind"></div>
-                            <span class="font-digital font-extrabold text-base sm:text-lg text-slate-200">PIERCER</span>
-                            <span class="text-[10px] text-slate-400 mt-1">[Tecla 4] Ultra Rápida</span>
-                        </button>
-
-                        <!-- MANUAL SWEEP -->
-                        <button id="btnManual" class="btn-push flex flex-col items-center justify-center p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700/80 group active:bg-blue-900/50">
-                            <div class="w-3 h-3 rounded-full bg-slate-700 mb-2 transition-colors led-ind"></div>
-                            <span class="font-digital font-extrabold text-base sm:text-lg text-amber-400">MANUAL</span>
-                            <span class="text-[10px] text-slate-400 mt-1">[Mantener 'W'] Ramp</span>
-                        </button>
-
-                        <!-- RUMBLER SUB-BASS EFFECT TOGGLE -->
-                        <button id="btnRumbler" class="btn-push flex flex-col items-center justify-center p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700/80 group">
-                            <div class="w-3 h-3 rounded-full bg-slate-700 group-hover:bg-red-500 mb-2 transition-colors led-ind"></div>
-                            <span class="font-digital font-extrabold text-base sm:text-lg text-red-400">RUMBLER</span>
-                            <span class="text-[10px] text-slate-400 mt-1">[Tecla R] Sub-Bajo</span>
-                        </button>
-
-                    </div>
-
-                    <!-- AIR HORN & DUAL HORN BIG PADS -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button id="btnAirHorn" class="btn-push py-5 px-6 rounded-2xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-
+                    <!-- Mic Input Live VU Meter -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+                            <span>VU METER VOZ</span>
+                            <span id="micVuText">0 dB</span>
+                        </div>
+                        <div class="w-full h-3 bg-
