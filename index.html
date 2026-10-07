@@ -1,306 +1,924 @@
-```html
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-950">
+<html lang="en" class="h-full bg-slate-950 text-slate-100 select-none font-sans">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Sirenas de Policía HD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TacControl-X // Emergency Vehicle Siren Console</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        tactical: {
+                            950: '#070a11',
+                            900: '#0e1422',
+                            850: '#151d30',
+                            800: '#1c2840',
+                            700: '#2a3a5c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;600;700&display=swap');
-
-        .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .font-sans { font-family: 'Inter', sans-serif; }
-
-        /* Custom glow effects for realistic lights */
-        .glow-red {
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.85), inset 0 0 12px rgba(255, 255, 255, 0.6);
-        }
-        .glow-blue {
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.85), inset 0 0 12px rgba(255, 255, 255, 0.6);
-        }
-        .glow-amber {
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.85), inset 0 0 12px rgba(255, 255, 255, 0.6);
-        }
-        .glow-green {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+        body {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #070a11;
         }
 
-        /* Tactile Button Pressing Effects */
-        .btn-tactile {
-            transition: all 0.08s ease-in-out;
-            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.6), 0 10px 15px rgba(0, 0, 0, 0.5);
-        }
-        .btn-tactile:active, .btn-tactile.active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.8), 0 4px 6px rgba(0, 0, 0, 0.4);
+        .tactical-btn {
+            position: relative;
+            transition: all 0.08s ease-out;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
-        /* Tactical Carbon Pattern Background */
-        .bg-tactical {
-            background-color: #0d1117;
-            background-image: radial-gradient(#1f293d 1px, transparent 1px), radial-gradient(#1f293d 1px, #0d1117 1px);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
+        .tactical-btn:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
         }
 
-        /* Metallic console borders */
-        .console-border {
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+        .btn-active-glow-blue {
+            background-color: #1d4ed8 !important;
+            border-color: #60a5fa !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-active-glow-amber {
+            background-color: #b45309 !important;
+            border-color: #fcd34d !important;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-active-glow-red {
+            background-color: #b91c1c !important;
+            border-color: #fca5a5 !important;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        .led-indicator {
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #151d30;
+            border-radius: 9999px;
+            border: 1px solid #2a3a5c;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+            border: 2px solid #ffffff;
+        }
+
+        .glass-panel {
+            background: rgba(14, 20, 34, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
         }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans select-none overflow-x-hidden text-slate-200 bg-tactical">
 
-    <!-- MAIN CONSOLE WRAPPER -->
-    <div class="flex-1 flex flex-col max-w-7xl w-full mx-auto p-2 sm:p-4 gap-4 h-full">
+<body class="h-full flex flex-col justify-between overflow-x-hidden text-slate-200">
 
-        <!-- HEADER & TOP CONTROL TOOLBAR -->
-        <header class="console-border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl">
+    <!-- Ambient Light Flasher Background -->
+    <div id="ambientBacklight" class="fixed inset-0 pointer-events-none opacity-0 z-0 transition-opacity duration-75"></div>
+
+    <!-- MAIN HEADER BAR -->
+    <header class="relative z-10 border-b border-slate-800/80 bg-tactical-900/90 p-3 sm:p-4 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            
             <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-blue-600/20 border border-blue-500/40 rounded-lg text-blue-400">
-                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 border border-blue-400/30 flex items-center justify-center text-blue-100 shadow-lg shadow-blue-900/40">
+                    <i class="fa-solid fa-shield-halved text-lg sm:text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-orbitron font-extrabold text-lg sm:text-xl tracking-wider text-white flex items-center gap-2">
-                        SIREN SYSTEM <span class="text-xs font-semibold px-2 py-0.5 bg-red-600 text-white rounded">V3.5 HD</span>
-                    </h1>
-                    <p class="text-xs text-slate-400 font-medium">Consola de Control de Sirena, Megafonía y Luces de Emergencia</p>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base sm:text-xl font-black tracking-wider text-slate-100 font-mono">TACCONTROL-X</h1>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">AUDIO FIX v2.1</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium hidden sm:block">Tactical Emergency Vehicle Siren & Lightbar Console</p>
                 </div>
             </div>
 
-            <!-- Global Quick Controls -->
-            <div class="flex items-center gap-2 sm:gap-4 flex-wrap">
-                <!-- Preset Country Selector -->
-                <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
-                    <label for="presetSelect" class="text-xs text-slate-400 mr-2 font-semibold">PRESET:</label>
-                    <select id="presetSelect" class="bg-transparent text-xs font-bold text-amber-400 focus:outline-none cursor-pointer">
-                        <option value="es" class="bg-slate-900 text-white">🇪🇸 España (Policía / GC)</option>
-                        <option value="us" class="bg-slate-900 text-white">🇺🇸 USA Police Interceptor</option>
-                        <option value="uk" class="bg-slate-900 text-white">🇬🇧 UK Emergency Services</option>
-                        <option value="futurist" class="bg-slate-900 text-white">⚡ Futurist / Synth</option>
+            <!-- DIGITAL SYSTEM STATUS & MASTER POWER -->
+            <div class="flex items-center gap-3 sm:gap-6">
+                
+                <div class="hidden lg:flex items-center gap-4 px-4 py-2 rounded-xl bg-tactical-950 border border-slate-800 text-xs font-mono">
+                    <div>
+                        <span class="text-slate-500 block text-[9px]">SYSTEM VOLTAGE</span>
+                        <span class="text-emerald-400 font-bold">13.8 VDC</span>
+                    </div>
+                    <div class="h-6 w-px bg-slate-800"></div>
+                    <div>
+                        <span class="text-slate-500 block text-[9px]">AUDIO ENGINE</span>
+                        <span id="audioStateText" class="text-amber-400 font-bold">READY</span>
+                    </div>
+                </div>
+
+                <!-- MASTER POWER SWITCH -->
+                <button id="masterPowerBtn" onclick="toggleMasterPower()" class="tactical-btn px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs sm:text-sm flex items-center gap-2.5 cursor-pointer">
+                    <div id="masterLed" class="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+                    <span id="masterPowerText" class="font-mono tracking-wider">SYSTEM STANDBY</span>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 max-w-7xl w-full mx-auto p-3 sm:p-6 flex-1 flex flex-col gap-4 sm:gap-6">
+
+        <!-- DUAL POD LIGHTBAR VISUALIZER PANEL -->
+        <section class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl flex flex-col gap-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-lightbulb text-amber-400 text-sm"></i>
+                    <span class="font-mono text-xs font-bold tracking-widest text-slate-300 uppercase">Emergency Lightbar Array</span>
+                </div>
+
+                <!-- PATTERN SELECTOR & FULLSCREEN TOGGLE -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <span class="text-xs text-slate-400 font-mono hidden sm:inline">PATTERN:</span>
+                    <select id="patternSelect" onchange="setStrobePattern(this.value)" class="bg-tactical-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 font-mono focus:outline-none focus:border-blue-500">
+                        <option value="quad">QUAD FLASH (TACH)</option>
+                        <option value="wigwag">WIG-WAG STROBE</option>
+                        <option value="hyper">HYPER-BURST</option>
                     </select>
-                </div>
 
-                <!-- Master Volume Slider -->
-                <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1">
-                    <i class="fa-solid fa-volume-high text-xs text-slate-400" id="volIcon"></i>
-                    <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="0.7" class="w-16 sm:w-24 accent-blue-500 cursor-pointer">
-                    <span id="volValue" class="text-xs font-mono text-slate-300 w-8">70%</span>
-                </div>
-
-                <!-- Master Mute Button -->
-                <button id="muteBtn" class="p-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 text-xs font-semibold transition">
-                    <i class="fa-solid fa-volume-xmark mr-1"></i> Mute
-                </button>
-            </div>
-        </header>
-
-        <!-- LIGHTBAR DISPLAY & REFLECTION SECTION -->
-        <section class="console-border rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden shadow-2xl">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-400 border-b border-slate-800 pb-2">
-                <span class="flex items-center gap-2">
-                    <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
-                    ESTADO LUCES: <span id="statusText" class="text-white font-bold">APAGADO</span>
-                </span>
-                <span class="font-mono text-slate-500">PATRULLERO ID: 091-TACTICAL</span>
-                <span id="patternName" class="text-amber-400 font-bold">PATRULLA ROTATIVO</span>
-            </div>
-
-            <!-- LIGHTBAR CANVAS MATRIX -->
-            <div class="relative w-full h-24 sm:h-32 bg-black/80 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden p-2">
-                <!-- Lightbar Physical Frame -->
-                <div class="w-full h-full max-w-4xl border-2 border-slate-700 rounded-xl bg-slate-950 flex items-center justify-between p-2 sm:p-4 gap-2 relative shadow-inner">
-                    <!-- Left Light Pods -->
-                    <div class="flex-1 h-full flex gap-1.5 sm:gap-2 items-center">
-                        <div id="ledL1" class="flex-1 h-full rounded-md bg-red-950/40 border border-red-900/40 transition-all duration-75"></div>
-                        <div id="ledL2" class="flex-1 h-full rounded-md bg-red-950/40 border border-red-900/40 transition-all duration-75"></div>
-                        <div id="ledL3" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
-                        <div id="ledL4" class="flex-1 h-full rounded-md bg-amber-950/40 border border-amber-900/40 transition-all duration-75"></div>
-                    </div>
-
-                    <!-- Center Speaker / Siren Grill -->
-                    <div class="w-16 sm:w-24 h-full bg-slate-900 border border-slate-700 rounded-md flex flex-col items-center justify-center gap-1 px-1">
-                        <div class="w-full h-1 bg-slate-800 rounded"></div>
-                        <div class="w-full h-1 bg-slate-800 rounded"></div>
-                        <div class="w-full h-1 bg-slate-800 rounded"></div>
-                        <span class="text-[9px] font-orbitron text-slate-500 font-bold tracking-tighter">100W PA</span>
-                    </div>
-
-                    <!-- Right Light Pods -->
-                    <div class="flex-1 h-full flex gap-1.5 sm:gap-2 items-center">
-                        <div id="ledR4" class="flex-1 h-full rounded-md bg-amber-950/40 border border-amber-900/40 transition-all duration-75"></div>
-                        <div id="ledR3" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
-                        <div id="ledR2" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
-                        <div id="ledR1" class="flex-1 h-full rounded-md bg-blue-950/40 border border-blue-900/40 transition-all duration-75"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dynamic Ambient Reflection Lighting Canvas -->
-            <canvas id="ambientCanvas" class="w-full h-6 rounded-md opacity-80 pointer-events-none"></canvas>
-
-            <!-- Light Controls Bar -->
-            <div class="flex items-center justify-between gap-2 flex-wrap pt-1">
-                <button id="toggleLightsMaster" class="btn-tactile bg-red-700 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-orbitron font-bold text-xs tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-lightbulb"></i> ENCENDER LUCES (L)
-                </button>
-
-                <div class="flex gap-2">
-                    <button id="btnPatternNext" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-sliders"></i> Cambiar Patrón
+                    <button onclick="toggleTheaterMode()" class="tactical-btn p-1.5 px-3 rounded-lg bg-tactical-850 hover:bg-tactical-800 border border-slate-700 text-xs text-slate-300 font-mono flex items-center gap-1.5">
+                        <i class="fa-solid fa-expand text-slate-400"></i>
+                        <span class="hidden sm:inline">FULLSCREEN FLASH</span>
                     </button>
-                    <span id="vehiclePresetLabel" class="text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-400 font-mono flex items-center">
-                        MODO: POLICÍA NACIONAL
-                    </span>
+                </div>
+            </div>
+
+            <!-- LED LIGHTBAR PODS -->
+            <div class="grid grid-cols-2 gap-3 sm:gap-6">
+                <!-- LEFT POD -->
+                <div class="bg-tactical-950 border border-slate-800/80 rounded-xl p-3 sm:p-4 flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                        <span>LEFT POD // CH-1</span>
+                        <span id="leftPodStatus">OFF</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5 sm:gap-3 h-16 sm:h-24">
+                        <div id="podL1" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                        <div id="podL2" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                        <div id="podL3" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                        <div id="podL4" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT POD -->
+                <div class="bg-tactical-950 border border-slate-800/80 rounded-xl p-3 sm:p-4 flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                        <span>RIGHT POD // CH-2</span>
+                        <span id="rightPodStatus">OFF</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5 sm:gap-3 h-16 sm:h-24">
+                        <div id="podR1" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                        <div id="podR2" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                        <div id="podR3" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                        <div id="podR4" class="rounded-lg bg-slate-900 border border-slate-800 transition-colors duration-75"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- MAIN CONTROL CONSOLE: SIRENS & MEGAPHONE -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-
-            <!-- LEFT & CENTER PANEL: SIREN TONES -->
-            <div class="lg:col-span-2 console-border rounded-xl p-4 flex flex-col gap-4 shadow-2xl">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <h2 class="font-orbitron text-sm font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-bullhorn text-red-500"></i> SELECTOR DE TONOS DE SIRENA
-                    </h2>
-                    <span class="text-xs text-slate-400 font-mono">TECLAS: [1] [2] [3] [4] [5] [ESPACIO]</span>
-                </div>
-
-                <!-- Primary Siren Buttons Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-
-                    <!-- WAIL Tone -->
-                    <button id="btnWail" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
-                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-red-400">
-                            <i class="fa-solid fa-wave-square text-lg"></i>
-                        </div>
-                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">WAIL</span>
-                        <span class="text-[10px] text-slate-400">Lento Largo [1]</span>
-                    </button>
-
-                    <!-- YELP Tone -->
-                    <button id="btnYelp" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
-                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-blue-400">
-                            <i class="fa-solid fa-bolt text-lg"></i>
-                        </div>
-                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">YELP</span>
-                        <span class="text-[10px] text-slate-400">Rápido Interceptor [2]</span>
-                    </button>
-
-                    <!-- HI-LO Tone (European / Spain) -->
-                    <button id="btnHiLo" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
-                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-amber-400">
-                            <i class="fa-solid fa-repeat text-lg"></i>
-                        </div>
-                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">HI-LO</span>
-                        <span class="text-[10px] text-slate-400">Dos Tonos (ES) [3]</span>
-                    </button>
-
-                    <!-- PIERCER / PHASER -->
-                    <button id="btnPiercer" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center justify-center gap-2 text-center group">
-                        <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center group-hover:text-purple-400">
-                            <i class="fa-solid fa-burst text-lg"></i>
-                        </div>
-                        <span class="font-orbitron font-bold text-xs tracking-wider text-slate-100">PIERCER</span>
-                        <span class="text-[10px] text-slate-400">Ultra Rápido [4]</span>
-                    </button>
-
-                </div>
-
-                <!-- Momentary & Secondary Triggers -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-                    <!-- MANUAL SWEEP (Hold to pitch up) -->
-                    <button id="btnManual" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex items-center justify-between px-4 group">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-hand-pointer text-slate-400 group-hover:text-emerald-400 text-xl"></i>
-                            <div class="text-left">
-                                <div class="font-orbitron font-bold text-xs text-white">MANUAL SWEEP</div>
-                                <div class="text-[10px] text-slate-400">Mantener Pulsado [M]</div>
-                            </div>
-                        </div>
-                        <span class="w-3 h-3 rounded-full bg-slate-700 border border-slate-500"></span>
-                    </button>
-
-                    <!-- SUB-BASS RUMBLER EFFECT -->
-                    <button id="btnRumbler" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex items-center justify-between px-4 group">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-drum text-slate-400 group-hover:text-red-500 text-xl"></i>
-                            <div class="text-left">
-                                <div class="font-orbitron font-bold text-xs text-white">RUMBLER (SUB)</div>
-                                <div class="text-[10px] text-slate-400">Vibración Baja [R]</div>
-                            </div>
-                        </div>
-                        <span id="rumblerIndicator" class="w-3 h-3 rounded-full bg-slate-700 border border-slate-500"></span>
-                    </button>
-
-                    <!-- AIR HORN (Bocina de Aire) -->
-                    <button id="btnAirHorn" class="btn-tactile bg-amber-600/30 hover:bg-amber-600/40 border-2 border-amber-500 rounded-xl p-3 flex items-center justify-between px-4 group">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-volume-off text-amber-400 text-2xl"></i>
-                            <div class="text-left">
-                                <div class="font-orbitron font-bold text-xs text-amber-300">BOCINA AIR HORN</div>
-                                <div class="text-[10px] text-amber-200/70">Pulsar para Ráfaga [ESPACIO]</div>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-angles-right text-amber-400"></i>
-                    </button>
-
-                </div>
-
-                <!-- REAL-TIME WAVEFORM OSCILLOSCOPE CANVAS -->
-                <div class="mt-auto bg-slate-950 rounded-xl border border-slate-800 p-3 flex flex-col gap-1">
-                    <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
-                        <span><i class="fa-solid fa-chart-line text-blue-400 mr-1"></i> OSCILOSCOPIO DE AUDIO EN TIEMPO REAL</span>
-                        <span id="audioFreqDisplay">FREQ: 0 Hz</span>
+        <!-- VEHICLE PRESET SELECTORS -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            
+            <!-- POLICE PRESET -->
+            <button id="vBtnPolice" onclick="setVehicleMode('police')" class="tactical-btn glass-panel rounded-2xl p-4 border border-slate-800 flex items-center justify-between text-left cursor-pointer group btn-active-glow-blue">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-blue-950/80 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                        <i class="fa-solid fa-shield-halved text-2xl"></i>
                     </div>
-                    <canvas id="oscillatorCanvas" class="w-full h-16 rounded bg-slate-900 border border-slate-800/80"></canvas>
+                    <div>
+                        <div class="font-mono text-xs text-blue-400 font-bold uppercase tracking-wider">LAW ENFORCEMENT</div>
+                        <div class="font-bold text-base text-slate-100">POLICE PATROL</div>
+                        <div class="text-[11px] text-slate-400 font-mono">Red/Blue Strobe • Wail/Yelp/Piercer</div>
+                    </div>
                 </div>
+                <div class="w-3 h-3 rounded-full bg-blue-500 led-indicator"></div>
+            </button>
+
+            <!-- FIRE PRESET -->
+            <button id="vBtnFire" onclick="setVehicleMode('fire')" class="tactical-btn glass-panel rounded-2xl p-4 border border-slate-800 hover:border-red-500/50 flex items-center justify-between text-left cursor-pointer group">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-red-950/80 border border-red-500/30 flex items-center justify-center text-red-400">
+                        <i class="fa-solid fa-fire text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-mono text-xs text-red-400 font-bold uppercase tracking-wider">FIRE & RESCUE</div>
+                        <div class="font-bold text-base text-slate-100">FIRE ENGINE</div>
+                        <div class="text-[11px] text-slate-400 font-mono">Red/Amber Strobe • Federal Q2B Rotor</div>
+                    </div>
+                </div>
+                <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+            </button>
+
+            <!-- AMBULANCE PRESET -->
+            <button id="vBtnAmbulance" onclick="setVehicleMode('ambulance')" class="tactical-btn glass-panel rounded-2xl p-4 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between text-left cursor-pointer group">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-amber-950/80 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <i class="fa-solid fa-truck-medical text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-mono text-xs text-amber-400 font-bold uppercase tracking-wider">MEDICAL SERVICES</div>
+                        <div class="font-bold text-base text-slate-100">AMBULANCE EMS</div>
+                        <div class="text-[11px] text-slate-400 font-mono">Blue/White Strobe • European Hi-Lo</div>
+                    </div>
+                </div>
+                <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+            </button>
+
+        </section>
+
+        <!-- SIREN & PA CONTROLS GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            
+            <!-- SIREN TONE SELECTOR PANEL (2 COLS) -->
+            <section class="lg:col-span-2 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-bullhorn text-blue-400 text-sm"></i>
+                        <span class="font-mono text-xs font-bold tracking-widest text-slate-300 uppercase">Siren Tone Selection</span>
+                    </div>
+                    <span id="activeToneBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">SIREN OFF</span>
+                </div>
+
+                <!-- SIREN BUTTONS GRID -->
+                <div id="sirenGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <!-- Dynamic Tone Buttons Injected Here -->
+                </div>
+
+                <!-- MOMENTARY TACTICAL CONTROLS -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onmousedown="startHorn(event)" onmouseup="stopHorn(event)" onmouseleave="stopHorn(event)"
+                            ontouchstart="startHorn(event)" ontouchend="stopHorn(event)"
+                            class="tactical-btn py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 font-extrabold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-volume-high text-amber-400 text-lg"></i>
+                        <span class="font-mono tracking-wider">HEAVY AIR HORN</span>
+                    </button>
+
+                    <button onmousedown="triggerManualSiren(event)" onmouseup="releaseManualSiren(event)" onmouseleave="releaseManualSiren(event)"
+                            ontouchstart="triggerManualSiren(event)" ontouchend="releaseManualSiren(event)"
+                            class="tactical-btn py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 font-extrabold text-xs sm:text-sm flex flex-col items-center justify-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-bolt text-blue-400 text-lg"></i>
+                        <span class="font-mono tracking-wider">MANUAL OVERRIDE</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- PA SYSTEM / MICROPHONE PANEL -->
+            <section class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-microphone text-emerald-400 text-sm"></i>
+                        <span class="font-mono text-xs font-bold tracking-widest text-slate-300 uppercase">PA System / Voice Broadcast</span>
+                    </div>
+                </div>
+
+                <!-- PTT MIC BUTTON -->
+                <button id="pttBtn"
+                        onmousedown="startPTT(event)" onmouseup="stopPTT(event)" onmouseleave="stopPTT(event)"
+                        ontouchstart="startPTT(event)" ontouchend="stopPTT(event)"
+                        class="tactical-btn py-5 rounded-xl bg-slate-900 border border-slate-700 hover:border-emerald-500/50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400" id="micIconHolder">
+                        <i class="fa-solid fa-microphone text-lg" id="micIcon"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-mono font-bold text-xs text-slate-200" id="pttText">PUSH TO TALK (PA MIC)</div>
+                        <div class="text-[10px] text-slate-500 font-mono" id="pttSubtext">HOLD TO BROADCAST VOICE</div>
+                    </div>
+                </button>
+
+                <!-- VU LEVEL METER -->
+                <div class="bg-tactical-950 border border-slate-800/80 rounded-xl p-3 flex flex-col gap-1.5">
+                    <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                        <span>MIC AUDIO LEVEL</span>
+                        <span id="vuValue">0 DB</span>
+                    </div>
+                    <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden flex">
+                        <div id="vuBar" class="h-full bg-emerald-500 w-0 transition-all duration-75"></div>
+                    </div>
+                </div>
+
+                <div class="text-[11px] text-slate-400 font-mono text-center bg-tactical-950 p-2 rounded-xl border border-slate-800">
+                    <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> Sirens automatically attenuate while PA mic is active.
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER CONTROLS -->
+    <footer class="relative z-10 border-t border-slate-800/80 bg-tactical-900/90 p-3 sm:p-4 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            
+            <!-- MASTER VOLUME -->
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-volume-high text-slate-400 text-sm"></i>
+                <span class="text-xs font-mono text-slate-400 uppercase font-bold w-24">OUTPUT GAIN:</span>
+                <input type="range" id="volSlider" min="0" max="100" value="80" oninput="setMasterVolume(this.value)" class="flex-1 h-2">
+                <span id="volValue" class="text-xs font-mono text-blue-400 font-bold w-12 text-right">80%</span>
             </div>
 
-            <!-- RIGHT PANEL: HIGH-POWER MEGAPHONE & POLICE RADIO MIC -->
-            <div class="console-border rounded-xl p-4 flex flex-col gap-4 shadow-2xl justify-between">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <h2 class="font-orbitron text-sm font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-walkie-talkie text-amber-400"></i> MEGAFONÍA / PTT VOZ
-                    </h2>
-                    <span id="micActiveDot" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
-                </div>
+            <!-- STROBE SPEED / BPM -->
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-gauge-high text-slate-400 text-sm"></i>
+                <span class="text-xs font-mono text-slate-400 uppercase font-bold w-24">STROBE RATE:</span>
+                <input type="range" id="speedSlider" min="100" max="600" value="300" oninput="setStrobeSpeed(this.value)" class="flex-1 h-2">
+                <span id="speedValue" class="text-xs font-mono text-amber-400 font-bold w-12 text-right">300 BPM</span>
+            </div>
 
-                <!-- Megaphone Mic Amplification Controls -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-3">
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>
-                        <strong>Megáfono Vehicular:</strong> Pulsa el botón para transmitir tu voz amplificada con acústica táctica.
-                    </p>
+        </div>
+    </footer>
 
-                    <!-- PTT Button -->
-                    <button id="btnMicToggle" class="btn-tactile bg-slate-800 hover:bg-slate-700 border-2 border-amber-500/60 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center group">
-                        <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-microphone text-2xl"></i>
-                        </div>
-                        <span id="micBtnText" class="font-orbitron font-bold text-xs tracking-wider text-amber-300">ACTIVAR MEGÁFONO</span>
-                        <span class="text-[10px] text-slate-400">Haz clic para hablar en directo</span>
-                    </button>
+    <script>
+        /* ====================================================================
+           AUDIO ENGINE & STATE MANAGEMENT
+           ==================================================================== */
+        let audioCtx = null;
+        let masterGain = null;
+        let masterCompressor = null;
+        let sirenGain = null;
 
-                    <!-- Megaphone Gain / Amplification Slider -->
-                    <div class="flex flex-col gap-1 pt-1">
-                        <div class="flex justify-between text-xs font-semibold">
-                            <span class="text-slate-400">Potencia Megáfono:</span>
-                            <span id="micGainVal" class="text-amber-400 font-mono font-bold">4.0x</span>
-                        </div>
-                        <input type="range" id="micGainSlider" min="1" max="10" step="0.5" value="4" class="w-full accent-amber-500 cursor-pointer">
-                    </div>
+        // System States
+        let isPowerOn = false;
+        let currentVehicle = 'police';
+        let currentSiren = 'off';
+        let activePattern = 'quad';
+        let masterVol = 0.8;
+        let strobeSpeedBpm = 300;
 
-                    <!-- Mic Input Live VU Meter -->
-                    <div class="flex flex-col gap-1">
-                        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
-                            <span>VU METER VOZ</span>
-                            <span id="micVuText">0 dB</span>
-                        </div>
-                        <div class="w-full h-3 bg-
+        // Active Siren References
+        let activeOscillators = [];
+        let sirenTimer = null;
+        let qRotorTimer = null;
+        let qFreq = 250;
+        let qTargetFreq = 1200;
+
+        // Horn State
+        let hornActive = false;
+        let hornNodes = [];
+
+        // Mic PA System State
+        let micStream = null;
+        let micSource = null;
+        let micGain = null;
+        let micAnalyser = null;
+        let vuAnimation = null;
+        let isPTTActive = false;
+
+        // Strobe Timer
+        let strobeTimer = null;
+        let strobeStep = 0;
+
+        const vehiclePresets = {
+            police: {
+                colors: { L: '#2563eb', R: '#dc2626' }, // Blue & Red
+                tones: [
+                    { id: 'wail', label: 'WAIL', icon: 'fa-wave-square' },
+                    { id: 'yelp', label: 'YELP', icon: 'fa-bolt' },
+                    { id: 'phaser', label: 'PIERCER', icon: 'fa-rocket' },
+                    { id: 'hilo', label: 'HI-LO', icon: 'fa-bell' }
+                ]
+            },
+            fire: {
+                colors: { L: '#dc2626', R: '#f59e0b' }, // Red & Amber
+                tones: [
+                    { id: 'qsiren', label: 'Q2B ROTOR', icon: 'fa-compact-disc' },
+                    { id: 'wail', label: 'FIRE WAIL', icon: 'fa-wave-square' },
+                    { id: 'yelp', label: 'RAPID YELP', icon: 'fa-bolt' },
+                    { id: 'hilo', label: 'HI-LO', icon: 'fa-bell' }
+                ]
+            },
+            ambulance: {
+                colors: { L: '#2563eb', R: '#f8fafc' }, // Blue & White
+                tones: [
+                    { id: 'hilo', label: 'HI-LO', icon: 'fa-bell' },
+                    { id: 'wail', label: 'EMS WAIL', icon: 'fa-wave-square' },
+                    { id: 'yelp', label: 'EMS YELP', icon: 'fa-bolt' },
+                    { id: 'phaser', label: 'PIERCER', icon: 'fa-rocket' }
+                ]
+            }
+        };
+
+        /* GUARANTEED AUDIO CONTEXT INITIALIZATION & RESUME */
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+
+                // Master Dynamics Compressor
+                masterCompressor = audioCtx.createDynamicsCompressor();
+                masterCompressor.threshold.setValueAtTime(-10, audioCtx.currentTime);
+                masterCompressor.knee.setValueAtTime(6, audioCtx.currentTime);
+                masterCompressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+                masterCompressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
+                masterCompressor.release.setValueAtTime(0.1, audioCtx.currentTime);
+
+                // Master Volume Gain
+                masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(masterVol, audioCtx.currentTime);
+
+                masterCompressor.connect(masterGain);
+                masterGain.connect(audioCtx.destination);
+            }
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const stateText = document.getElementById('audioStateText');
+            if (stateText) {
+                stateText.textContent = audioCtx.state.toUpperCase();
+                stateText.className = audioCtx.state === 'running' ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
+            }
+        }
+
+        /* SIREN GENERATOR ENGINE */
+        function startSiren(toneId) {
+            ensureAudioContext();
+            stopSiren();
+
+            if (toneId === 'off') return;
+
+            const now = audioCtx.currentTime;
+            sirenGain = audioCtx.createGain();
+            sirenGain.gain.setValueAtTime(isPTTActive ? 0.15 : 0.85, now);
+            sirenGain.connect(masterCompressor);
+
+            if (toneId === 'wail') {
+                // WAIL: Smooth 450Hz <-> 1500Hz sweep over 8 seconds
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sawtooth';
+
+                const sweep = () => {
+                    if (currentSiren !== 'wail' || !audioCtx) return;
+                    const t = audioCtx.currentTime;
+                    osc.frequency.cancelScheduledValues(t);
+                    osc.frequency.setValueAtTime(450, t);
+                    osc.frequency.linearRampToValueAtTime(1500, t + 4.0);
+                    osc.frequency.linearRampToValueAtTime(450, t + 8.0);
+                };
+
+                sweep();
+                sirenTimer = setInterval(sweep, 8000);
+                osc.connect(sirenGain);
+                osc.start(now);
+                activeOscillators.push(osc);
+
+            } else if (toneId === 'yelp') {
+                // YELP: Fast 450Hz <-> 1500Hz sweep over 240ms
+                const osc = audioCtx.type = 'sawtooth';
+                const yelpOsc = audioCtx.createOscillator();
+                yelpOsc.type = 'sawtooth';
+
+                const sweep = () => {
+                    if (currentSiren !== 'yelp' || !audioCtx) return;
+                    const t = audioCtx.currentTime;
+                    yelpOsc.frequency.cancelScheduledValues(t);
+                    yelpOsc.frequency.setValueAtTime(450, t);
+                    yelpOsc.frequency.linearRampToValueAtTime(1500, t + 0.22);
+                };
+
+                sweep();
+                sirenTimer = setInterval(sweep, 240);
+                yelpOsc.connect(sirenGain);
+                yelpOsc.start(now);
+                activeOscillators.push(yelpOsc);
+
+            } else if (toneId === 'phaser') {
+                // PIERCER / PHASER: Ultra-fast LFO modulation
+                const osc = audioCtx.createOscillator();
+                const lfo = audioCtx.createOscillator();
+                const lfoGain = audioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                lfo.type = 'sawtooth';
+
+                lfo.frequency.setValueAtTime(18, now);
+                lfoGain.gain.setValueAtTime(600, now);
+
+                osc.frequency.setValueAtTime(1000, now);
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(osc.frequency);
+                osc.connect(sirenGain);
+
+                lfo.start(now);
+                osc.start(now);
+                activeOscillators.push(osc, lfo);
+
+            } else if (toneId === 'hilo') {
+                // HI-LO: Alternating 450Hz and 650Hz every 700ms
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sawtooth';
+                let isHigh = false;
+
+                const toggleHiLo = () => {
+                    if (currentSiren !== 'hilo' || !audioCtx) return;
+                    const t = audioCtx.currentTime;
+                    const target = isHigh ? 650 : 450;
+                    osc.frequency.setValueAtTime(target, t);
+                    isHigh = !isHigh;
+                };
+
+                toggleHiLo();
+                sirenTimer = setInterval(toggleHiLo, 700);
+
+                osc.connect(sirenGain);
+                osc.start(now);
+                activeOscillators.push(osc);
+
+            } else if (toneId === 'qsiren') {
+                // Q2B ROTOR: Mechanical Siren Rotor Simulation
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sawtooth';
+                qFreq = 250;
+                qTargetFreq = 1200;
+                osc.frequency.setValueAtTime(qFreq, now);
+
+                qRotorTimer = setInterval(() => {
+                    if (currentSiren !== 'qsiren' || !audioCtx) return;
+                    if (qFreq < qTargetFreq) {
+                        qFreq += (qTargetFreq - qFreq) * 0.05;
+                        if (qFreq > qTargetFreq - 30) qTargetFreq = 300;
+                    } else {
+                        qFreq -= (qFreq - qTargetFreq) * 0.03;
+                        if (qFreq < 320) qTargetFreq = 1200;
+                    }
+                    osc.frequency.setTargetAtTime(qFreq, audioCtx.currentTime, 0.03);
+                }, 40);
+
+                osc.connect(sirenGain);
+                osc.start(now);
+                activeOscillators.push(osc);
+            }
+        }
+
+        function stopSiren() {
+            if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
+            if (qRotorTimer) { clearInterval(qRotorTimer); qRotorTimer = null; }
+
+            activeOscillators.forEach(osc => {
+                try {
+                    osc.stop();
+                    osc.disconnect();
+                } catch (e) {}
+            });
+            activeOscillators = [];
+        }
+
+        /* HEAVY AIR HORN */
+        function startHorn(e) {
+            if (e) e.preventDefault();
+            ensureAudioContext();
+            if (!isPowerOn) toggleMasterPower();
+            if (hornActive) return;
+            hornActive = true;
+
+            const now = audioCtx.currentTime;
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const hornGainNode = audioCtx.createGain();
+
+            osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(118, now);
+            osc2.type = 'square';   osc2.frequency.setValueAtTime(158, now);
+
+            hornGainNode.gain.setValueAtTime(1.0, now);
+
+            osc1.connect(hornGainNode);
+            osc2.connect(hornGainNode);
+            hornGainNode.connect(masterCompressor);
+
+            osc1.start(now);
+            osc2.start(now);
+
+            hornNodes = [osc1, osc2, hornGainNode];
+        }
+
+        function stopHorn(e) {
+            if (e) e.preventDefault();
+            if (!hornActive) return;
+            hornActive = false;
+
+            hornNodes.forEach(node => {
+                try {
+                    if (node.stop) node.stop();
+                    if (node.disconnect) node.disconnect();
+                } catch(e){}
+            });
+            hornNodes = [];
+        }
+
+        function triggerManualSiren(e) {
+            if (e) e.preventDefault();
+            ensureAudioContext();
+            if (!isPowerOn) toggleMasterPower();
+            startSiren('phaser');
+        }
+
+        function releaseManualSiren(e) {
+            if (e) e.preventDefault();
+            stopSiren();
+            currentSiren = 'off';
+            renderSirenGrid();
+        }
+
+        /* LIVE MICROPHONE PA SYSTEM */
+        async function startPTT(e) {
+            if (e) e.preventDefault();
+            ensureAudioContext();
+            if (!isPowerOn) toggleMasterPower();
+            if (isPTTActive) return;
+
+            try {
+                if (!micStream) {
+                    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                }
+
+                const now = audioCtx.currentTime;
+                micSource = audioCtx.createMediaStreamSource(micStream);
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1200, now);
+                filter.Q.setValueAtTime(1.2, now);
+
+                micGain = audioCtx.createGain();
+                micGain.gain.setValueAtTime(2.5, now);
+
+                micAnalyser = audioCtx.createAnalyser();
+                micAnalyser.fftSize = 64;
+
+                micSource.connect(filter);
+                filter.connect(micGain);
+                micGain.connect(masterCompressor);
+                micGain.connect(micAnalyser);
+
+                isPTTActive = true;
+                if (sirenGain) sirenGain.gain.setValueAtTime(0.15, now);
+
+                document.getElementById('pttBtn').classList.add('btn-active-glow-amber');
+                document.getElementById('pttText').textContent = "BROADCASTING (LIVE PA)";
+                document.getElementById('pttText').className = "font-mono font-bold text-xs text-amber-300";
+                document.getElementById('micIconHolder').className = "w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold animate-pulse";
+
+                startVuMeter();
+
+            } catch (err) {
+                console.error("Mic access error:", err);
+                document.getElementById('pttSubtext').textContent = "MIC PERMISSION DENIED";
+            }
+        }
+
+        function stopPTT(e) {
+            if (e) e.preventDefault();
+            if (!isPTTActive) return;
+            isPTTActive = false;
+
+            if (micSource) { try { micSource.disconnect(); } catch(e){} }
+            if (sirenGain && audioCtx) sirenGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+
+            document.getElementById('pttBtn').classList.remove('btn-active-glow-amber');
+            document.getElementById('pttText').textContent = "PUSH TO TALK (PA MIC)";
+            document.getElementById('pttText').className = "font-mono font-bold text-xs text-slate-200";
+            document.getElementById('micIconHolder').className = "w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400";
+            
+            cancelAnimationFrame(vuAnimation);
+            document.getElementById('vuBar').style.width = '0%';
+            document.getElementById('vuValue').textContent = '0 DB';
+        }
+
+        function startVuMeter() {
+            if (!micAnalyser) return;
+            const data = new Uint8Array(micAnalyser.frequencyBinCount);
+            
+            function drawVU() {
+                if (!isPTTActive) return;
+                micAnalyser.getByteFrequencyData(data);
+                let sum = 0;
+                for (let i = 0; i < data.length; i++) sum += data[i];
+                let avg = sum / data.length;
+                let pct = Math.min(100, Math.round((avg / 128) * 100));
+
+                document.getElementById('vuBar').style.width = pct + '%';
+                document.getElementById('vuValue').textContent = `${Math.round(pct * 0.6)} DB`;
+                vuAnimation = requestAnimationFrame(drawVU);
+            }
+            drawVU();
+        }
+
+        /* LIGHTBAR STROBE CONTROLLER */
+        function startStrobe() {
+            stopStrobe();
+            strobeStep = 0;
+
+            const intervalMs = (60 / strobeSpeedBpm) * 1000 / 2;
+
+            strobeTimer = setInterval(() => {
+                strobeStep++;
+                const colors = vehiclePresets[currentVehicle].colors;
+                const isLeftPhase = (strobeStep % 2 === 0);
+
+                const podL = ['podL1', 'podL2', 'podL3', 'podL4'];
+                const podR = ['podR1', 'podR2', 'podR3', 'podR4'];
+                const backdrop = document.getElementById('ambientBacklight');
+
+                if (isLeftPhase) {
+                    setPodState(podL, colors.L, true);
+                    setPodState(podR, colors.R, false);
+                    backdrop.style.backgroundColor = colors.L;
+                } else {
+                    setPodState(podL, colors.L, false);
+                    setPodState(podR, colors.R, true);
+                    backdrop.style.backgroundColor = colors.R;
+                }
+                backdrop.style.opacity = "0.2";
+            }, intervalMs);
+
+            document.getElementById('leftPodStatus').textContent = 'ACTIVE';
+            document.getElementById('rightPodStatus').textContent = 'ACTIVE';
+            document.getElementById('leftPodStatus').className = 'text-blue-400 font-bold';
+            document.getElementById('rightPodStatus').className = 'text-red-400 font-bold';
+        }
+
+        function setPodState(podIds, color, active) {
+            podIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (active) {
+                    el.style.backgroundColor = color;
+                    el.style.boxShadow = `0 0 15px ${color}`;
+                } else {
+                    el.style.backgroundColor = '#0f172a';
+                    el.style.boxShadow = 'none';
+                }
+            });
+        }
+
+        function stopStrobe() {
+            if (strobeTimer) { clearInterval(strobeTimer); strobeTimer = null; }
+            ['podL1','podL2','podL3','podL4','podR1','podR2','podR3','podR4'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.backgroundColor = '#0f172a';
+                    el.style.boxShadow = 'none';
+                }
+            });
+            const backdrop = document.getElementById('ambientBacklight');
+            if (backdrop) backdrop.style.opacity = "0";
+
+            document.getElementById('leftPodStatus').textContent = 'OFF';
+            document.getElementById('rightPodStatus').textContent = 'OFF';
+            document.getElementById('leftPodStatus').className = 'text-slate-500';
+            document.getElementById('rightPodStatus').className = 'text-slate-500';
+        }
+
+        function toggleMasterPower() {
+            ensureAudioContext();
+            isPowerOn = !isPowerOn;
+
+            const btn = document.getElementById('masterPowerBtn');
+            const txt = document.getElementById('masterPowerText');
+            const led = document.getElementById('masterLed');
+
+            if (isPowerOn) {
+                btn.className = "tactical-btn px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white font-bold text-xs sm:text-sm flex items-center gap-2.5 cursor-pointer shadow-lg shadow-blue-900/50";
+                txt.textContent = "SYSTEM ACTIVE";
+                led.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 led-indicator animate-pulse";
+                startStrobe();
+            } else {
+                btn.className = "tactical-btn px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs sm:text-sm flex items-center gap-2.5 cursor-pointer";
+                txt.textContent = "SYSTEM STANDBY";
+                led.className = "w-2.5 h-2.5 rounded-full bg-slate-600";
+                stopSiren();
+                stopStrobe();
+                stopPTT();
+                currentSiren = 'off';
+            }
+
+            renderSirenGrid();
+        }
+
+        function setVehicleMode(modeKey) {
+            currentVehicle = modeKey;
+
+            ['police', 'fire', 'ambulance'].forEach(k => {
+                const b = document.getElementById(`vBtn${k.charAt(0).toUpperCase() + k.slice(1)}`);
+                if (k === modeKey) {
+                    b.className = `tactical-btn glass-panel rounded-2xl p-4 border border-slate-800 flex items-center justify-between text-left cursor-pointer group btn-active-glow-${k === 'police' ? 'blue' : k === 'fire' ? 'red' : 'amber'}`;
+                } else {
+                    b.className = "tactical-btn glass-panel rounded-2xl p-4 border border-slate-800 hover:border-slate-700 flex items-center justify-between text-left cursor-pointer group";
+                }
+            });
+
+            renderSirenGrid();
+            if (isPowerOn) startStrobe();
+        }
+
+        function renderSirenGrid() {
+            const grid = document.getElementById('sirenGrid');
+            grid.innerHTML = '';
+
+            const tones = vehiclePresets[currentVehicle].tones;
+            tones.forEach(tone => {
+                const isSelected = currentSiren === tone.id;
+                const button = document.createElement('button');
+                button.onclick = () => selectTone(tone.id);
+                button.className = `tactical-btn py-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center gap-2 cursor-pointer font-mono ${isSelected ? 'btn-active-glow-blue' : 'bg-slate-900 hover:bg-slate-800 text-slate-300'}`;
+
+                button.innerHTML = `
+                    <i class="fa-solid ${tone.icon} text-base"></i>
+                    <span class="text-xs font-bold tracking-wider">${tone.label}</span>
+                `;
+
+                grid.appendChild(button);
+            });
+
+            const badge = document.getElementById('activeToneBadge');
+            if (currentSiren !== 'off') {
+                badge.textContent = `SIREN: ${currentSiren.toUpperCase()}`;
+                badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30";
+            } else {
+                badge.textContent = "SIREN OFF";
+                badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700";
+            }
+        }
+
+        function selectTone(toneId) {
+            ensureAudioContext();
+            if (!isPowerOn) toggleMasterPower();
+
+            if (currentSiren === toneId) {
+                currentSiren = 'off';
+                stopSiren();
+            } else {
+                currentSiren = toneId;
+                startSiren(toneId);
+            }
+
+            renderSirenGrid();
+        }
+
+        function setStrobePattern(pattern) {
+            activePattern = pattern;
+            if (isPowerOn) startStrobe();
+        }
+
+        function setMasterVolume(val) {
+            masterVol = val / 100;
+            document.getElementById('volValue').textContent = `${val}%`;
+            if (masterGain && audioCtx) {
+                masterGain.gain.setValueAtTime(masterVol, audioCtx.currentTime);
+            }
+        }
+
+        function setStrobeSpeed(val) {
+            strobeSpeedBpm = parseInt(val);
+            document.getElementById('speedValue').textContent = `${val} BPM`;
+            if (isPowerOn) startStrobe();
+        }
+
+        function toggleTheaterMode() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setVehicleMode('police');
+        });
+    </script>
+</body>
+</html>
